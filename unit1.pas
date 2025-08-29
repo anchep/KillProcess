@@ -31,7 +31,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Spin,
-  ExtCtrls, ComCtrls, Menus, Windows;
+  ExtCtrls, ComCtrls, Menus, Calendar, Windows;
 
 type
 
@@ -40,6 +40,7 @@ type
   TForm1 = class(TForm)
     Button1: TButton;
     Button2: TButton;
+    Calendar1: TCalendar;
     Edit1: TEdit;
     Label1: TLabel;
     Label2: TLabel;

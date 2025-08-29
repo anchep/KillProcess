@@ -69,7 +69,7 @@ object Form1: TForm1
   object Calendar1: TCalendar
     Left = 48
     Height = 178
-    Top = 192
+    Top = 208
     Width = 218
     DateTime = 45898
     TabOrder = 5
