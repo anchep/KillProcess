@@ -1,0 +1,11 @@
+* ISO-8859 text, with CRLF line terminators
+# 在项目根目录创建 .gitignore 并添加以下内容
+*.exe
+*.o
+*.ppu
+*.lrs
+*.bak
+*.~*
+bin/
+obj/
+backup/
