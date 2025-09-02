@@ -31,17 +31,19 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Spin,
-  ExtCtrls, ComCtrls, Menus, Calendar, Windows;
+  ExtCtrls, ComCtrls, Menus, JSONPropStorage, UniqueInstance, ubarcodes,
+  Windows;
 
 type
 
-  { TForm1 }
+  { TKillProcess }
 
-  TForm1 = class(TForm)
+  TKillProcess = class(TForm)
+    BarcodeQR1: TBarcodeQR;
     Button1: TButton;
     Button2: TButton;
-    Calendar1: TCalendar;
     Edit1: TEdit;
+    JSONPropStorage1: TJSONPropStorage;
     Label1: TLabel;
     Label2: TLabel;
     MenuItem1: TMenuItem;
@@ -51,14 +53,20 @@ type
     SpinEdit1: TSpinEdit;
     Timer1: TTimer;
     Timer2: TTimer;
+    Timer3: TTimer;
     TrayIcon1: TTrayIcon;
+    UniqueInstance1: TUniqueInstance;
+    procedure BarcodeQR1Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
+    procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
+    procedure Timer3Timer(Sender: TObject);
     procedure TrayIcon1DblClick(Sender: TObject);
   private
 
@@ -67,25 +75,24 @@ type
   end;
 
 var
-  Form1: TForm1;
+  KillProcess: TKillProcess;
 
 implementation
 
 {$R *.lfm}
 
-{ TForm1 }
+{ TKillProcess }
 
-
-procedure TForm1.FormWindowStateChange(Sender: TObject);
+procedure TKillProcess.FormWindowStateChange(Sender: TObject);
 begin
-  if Form1.WindowState = wsMinimized then
+  if KillProcess.WindowState = wsMinimized then
   begin
     Visible := False;  // 隐藏主窗口
     TrayIcon1.Visible := True;  // 显示托盘图标（可选）
   end;
 end;
 
-procedure TForm1.MenuItem1Click(Sender: TObject);
+procedure TKillProcess.MenuItem1Click(Sender: TObject);
 const
   URL = 'https://www.280i.com';  // 目标网址
 var
@@ -99,13 +106,13 @@ begin
   end;
 end;
 
-procedure TForm1.MenuItem2Click(Sender: TObject);
+procedure TKillProcess.MenuItem2Click(Sender: TObject);
 begin
   Application.Terminate;
 end;
 
 
-procedure TForm1.Timer1Timer(Sender: TObject);
+procedure TKillProcess.Timer1Timer(Sender: TObject);
 var
   CmdLine: string;
   Result: integer;       // 执行结果
@@ -122,12 +129,18 @@ begin
   ProgressBar1.Position := 0;
 end;
 
-procedure TForm1.Timer2Timer(Sender: TObject);
+procedure TKillProcess.Timer2Timer(Sender: TObject);
 begin
   ProgressBar1.Position := ProgressBar1.Position + 1;
 end;
 
-procedure TForm1.TrayIcon1DblClick(Sender: TObject);
+procedure TKillProcess.Timer3Timer(Sender: TObject);
+begin
+  Timer3.Enabled := False;
+  Button1.Click;
+end;
+
+procedure TKillProcess.TrayIcon1DblClick(Sender: TObject);
 begin
   Visible := True;  // 显示主窗口
   WindowState := wsNormal;  // 恢复正常窗口状态
@@ -135,7 +148,7 @@ begin
   BringToFront;  // 窗口置顶
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TKillProcess.Button1Click(Sender: TObject);
 begin
   Timer1.Interval := SpinEdit1.Value * 60 * 1000;
   ProgressBar1.Max := SpinEdit1.Value * 60;
@@ -154,7 +167,12 @@ begin
   end;
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
+procedure TKillProcess.BarcodeQR1Click(Sender: TObject);
+begin
+  MenuItem1.Click;
+end;
+
+procedure TKillProcess.Button2Click(Sender: TObject);
 var
   CmdLine: string;
   Result: integer;       // 执行结果
@@ -168,6 +186,24 @@ begin
   begin
     ShowMessage(Format('终止进程失败！错误代码：%d', [Result]));
   end;
+end;
+
+procedure TKillProcess.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+begin
+  JSONPropStorage1.StoredValue['Process'] := Edit1.Text;
+  JSONPropStorage1.StoredValue['Interval'] := SpinEdit1.Value.ToString;
+
+  JSONPropStorage1.Save;
+end;
+
+procedure TKillProcess.FormShow(Sender: TObject);
+var
+  rt1,rt2:String;
+begin
+    rt1 := JSONPropStorage1.ReadString('Process','jpengine.exe');
+    rt2 := JSONPropStorage1.ReadString('Interval','1');
+    Edit1.Text:=rt1;
+    SpinEdit1.Value := rt2.ToInteger;
 end;
 
 end.

@@ -1,0 +1,8 @@
+{
+  "TApplication" : {
+    "KillProcess" : {
+      "Process" : "jpengine.exe",
+      "Interval" : "1"
+    }
+  }
+}
